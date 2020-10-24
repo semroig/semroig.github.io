@@ -1,41 +1,48 @@
 <?php
-  /**
-  * Requires the "PHP Email Form" library
-  * The "PHP Email Form" library is available only in the pro version of the template
-  * The library should be uploaded to: vendor/php-email-form/php-email-form.php
-  * For more info and help: https://bootstrapmade.com/php-email-form/
-  */
 
-  // Replace contact@example.com with your real receiving email address
-  $receiving_email_address = 'sem.roig@gmail.com';
+// ENTER YOUR EMAIL
+$emailTo = "sem.roig@gmail.com";
 
-  if( file_exists($php_email_form = '../assets/vendor/php-email-form/php-email-form.php' )) {
-    include( $php_email_form );
-  } else {
-    die( 'Unable to load the "PHP Email Form" Library!');
-  }
+// ENTER IDENTIFIER
+$emailIdentifier =  "Message sent via contact form from Personal Portfolio" . $_SERVER["SERVER_NAME"];
 
-  $contact = new PHP_Email_Form;
-  $contact->ajax = true;
-  
-  $contact->to = $receiving_email_address;
-  $contact->from_name = $_POST['name'];
-  $contact->from_email = $_POST['email'];
-  $contact->subject = $_POST['subject'];
 
-  // Uncomment below code if you want to use SMTP to send emails. You need to enter your correct SMTP credentials
-  /*
-  $contact->smtp = array(
-    'host' => 'example.com',
-    'username' => 'example',
-    'password' => 'pass',
-    'port' => '587'
-  );
-  */
+if($_POST) {
 
-  $contact->add_message( $_POST['name'], 'From');
-  $contact->add_message( $_POST['email'], 'Email');
-  $contact->add_message( $_POST['message'], 'Message', 10);
+    $name = addslashes(trim($_POST["name"]));
+    $clientEmail = addslashes(trim($_POST["email"]));
+    $message = addslashes(trim($_POST["message"]));
+	$fhp_input = addslashes(trim($_POST["company"]));
 
-  echo $contact->send();
+    $array = array("nameMessage" => "", "emailMessage" => "", "messageMessage" => "","succesMessage" => "");
+
+    if($name == "") {
+    	$array["nameMessage"] = "x";
+    }
+	
+    if(!filter_var($clientEmail, FILTER_VALIDATE_EMAIL)) {
+        $array["emailMessage"] = "x";
+    }
+	
+    if($message == "") {
+        $array["messageMessage"] = "x";
+    }
+	
+    if($name != "" && filter_var($clientEmail, FILTER_VALIDATE_EMAIL) && $message != "" && $fhp_input == "") {
+		
+		$array["succesMessage"] = "";
+		
+		$headers  = "MIME-Version: 1.0" . "\r\n";
+        $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+		$headers .= "From: " . $name . " <" . $clientEmail .">\r\n";
+		$headers .= "Reply-To: " . $clientEmail;
+		
+		mail($emailTo, $emailIdentifier, $message, $headers);
+		
+    }
+
+    echo json_encode($array);
+
+}
+
 ?>
